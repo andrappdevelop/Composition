@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.example.composition.R
 import com.example.composition.databinding.FragmentGameFinishedBinding
 import com.example.composition.domain.entity.GameResult
 
@@ -34,6 +35,11 @@ class GameFinishedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupClickListeners()
+        bindViews()
+    }
+
+    private fun setupClickListeners() {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 retryGame()
@@ -45,8 +51,46 @@ class GameFinishedFragment : Fragment() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun bindViews() {
+        with(binding) {
+            emojiResult.setImageResource(getSmileResId())
+            textViewRequiredAnswer.text = String.format(
+                getString(R.string.text_min_right_answers),
+                gameResult.gameSettings.minCountOfRightAnswers
+            )
+            textViewScoreAnswer.text = String.format(
+                getString(R.string.current_score),
+                gameResult.countOfRightAnswers
+            )
+            textViewRequiredPercentage.text = String.format(
+                getString(R.string.min_percent_right_answers),
+                gameResult.gameSettings.minPercentOfRightAnswers
+            )
+            textViewScorePercentage.text = String.format(
+                getString(R.string.score_percentage),
+                getPercentOfRightAnswers()
+            )
+        }
+    }
+
+    private fun getSmileResId(): Int {
+        return if (gameResult.isWin) {
+            R.drawable.ic_smile
+        } else {
+            R.drawable.ic_sad
+        }
+    }
+
+    private fun getPercentOfRightAnswers() = with(gameResult) {
+        if (countOfQuestions == 0) {
+            0
+        } else {
+            ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
 
